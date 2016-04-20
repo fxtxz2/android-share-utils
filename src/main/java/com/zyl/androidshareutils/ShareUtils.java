@@ -74,6 +74,23 @@ public class ShareUtils {
 
     /**
      * 分享图片给微信好友
+     * @param content 内容
+     * @param context 当前上下文
+     */
+    public void shareToWeiXinFriend(String content, Context context) {
+        Intent intent = new Intent();
+        ComponentName comp = new ComponentName(WEIXIN_PACKAGE, WEIXIN_SHARE_IMAGE_FRIEND);
+        intent.setComponent(comp);
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setType(MIME_TEXT);
+//        intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(file));
+        intent.putExtra(Intent.EXTRA_TEXT, content);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.getApplicationContext().startActivity(intent);
+    }
+
+    /**
+     * 分享图片给微信好友
      * @param file 文件
      * @param context 当前上下文
      */

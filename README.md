@@ -68,5 +68,5 @@ ShareUtils.getInstance().shareToQQImage(uris, MainActivity.this);// 分享多图
 ```
 # Gradle引入
 ```Gradle
-compile 'com.zyl.androidshareutils:android-share-utils:0.0.1'
+compile 'com.zyl.androidshareutils:android-share-utils:0.0.2'
 ```
