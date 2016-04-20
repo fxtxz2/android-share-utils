@@ -3,6 +3,10 @@
 主要使用了Google的[ClassyShark](https://github.com/google/android-classyshark)工具
 
 # 指南
+## 分享文本给微信好友
+```Java
+ShareUtils.getInstance().shareToWeiXinFriend(content, MainActivity.this);
+```
 ## 分享图片给微信好友
 ```Java
 ShareUtils.getInstance().shareToWeiXinFriend(file, MainActivity.this);
