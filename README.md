@@ -1,3 +1,4 @@
+[![bintray](https://api.bintray.com/packages/zyl/maven/android-share-utils/images/download.svg)](https://bintray.com/zyl/maven/android-share-utils/_latestVersion)
 # android-share-utils
 社会化分享工具:微信好友,微信朋友圈,微博,qq空间(必须已经安装qq空间客户端),qq好友 [参考这篇文章](http://www.eoeandroid.com/thread-288401-1-1.html)
 主要使用了Google的[ClassyShark](https://github.com/google/android-classyshark)工具
