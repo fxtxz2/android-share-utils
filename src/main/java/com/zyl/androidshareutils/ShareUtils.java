@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +19,14 @@ import android.widget.Toast;
 
 import com.liulishuo.filedownloader.BaseDownloadTask;
 import com.liulishuo.filedownloader.FileDownloadLargeFileListener;
+import com.liulishuo.filedownloader.FileDownloadListener;
 import com.liulishuo.filedownloader.FileDownloader;
 
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 社会化分享工具:微信好友,微信朋友圈,微博,qq空间(必须已经安装qq空间客户端),qq好友
@@ -308,6 +311,80 @@ public class ShareUtils {
                 }
                 shareDialog(context, content, uris);
             }
+        }
+    }
+
+    public void shareNative(final Context context, List<String> imageUrls, final String content, String downloadDir) {
+        final int size = imageUrls.size();
+        final ArrayList<Uri> uris = new ArrayList<>();
+        final FileDownloadListener queueTarget =new FileDownloadLargeFileListener() {
+            @Override
+            protected void pending(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                Log.i("file:", task.getUrl());
+            }
+
+            @Override
+            protected void progress(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                Log.i("file:", task.getUrl());
+            }
+
+            @Override
+            protected void paused(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                Log.i("file:", task.getUrl());
+            }
+
+            @Override
+            protected void completed(BaseDownloadTask task) {
+                File file = new File(task.getPath());
+                if (file.exists()){
+                    uris.add(Uri.fromFile(file));
+                }
+                // 判断是否全部突破全部下载完成，并实现系统分享
+                int endSize = uris.size();
+                if (endSize == size){
+                    shareDialog(context, content, uris);
+                }
+
+            }
+
+            @Override
+            protected void error(BaseDownloadTask task, Throwable e) {
+                Log.i("file:", e.getMessage());
+
+            }
+
+            @Override
+            protected void warn(BaseDownloadTask task) {
+                Log.i("file:", task.getUrl());
+            }
+        };
+        for (int i = 0; i < size; i++) {
+            String imageUrl = imageUrls.get(i);
+            if (!TextUtils.isEmpty(imageUrl)){
+                String fileName = FilenameUtils.getName(imageUrl);//检索文件名
+                final File file = new File(downloadDir + fileName);
+                if (!fileIsExists(file.getPath())){
+                    FileDownloader.getImpl().create(imageUrl)
+                            .setPath(file.getPath())
+                            .setCallbackProgressTimes(0)
+                            .setListener(queueTarget)
+                            .asInQueueTask()
+                            .enqueue();
+                } else {
+                    if (file.exists()){
+                        uris.add(Uri.fromFile(file));
+                    }
+                }
+            }
+        }
+        FileDownloader.getImpl().start(queueTarget, true);
+        // 判断是否全部突破全部下载完成，并实现系统分享
+        int endSize = uris.size();
+        if (endSize == size){
+            shareDialog(context, content, uris);
         }
     }
 

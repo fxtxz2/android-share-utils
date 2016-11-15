@@ -20,7 +20,10 @@ public class Application{
 ```
 ### 快速调用
 ```Java
+// 单个图片分享
 ShareUtils.getInstance().shareNative(context, imageUrl, content, DIR_PATH);
+// 多个图片分享
+ShareUtils.getInstance().shareNative(context, imageUrls, content, DIR_PATH);
 ```
 ### 快速分享效果
 ![android-share-utils](images/share_demo.gif)
@@ -93,5 +96,5 @@ ShareUtils.getInstance().shareToQQImage(uris, MainActivity.this);// 分享多图
 ```
 # Gradle引入
 ```Gradle
-compile 'com.zyl.androidshareutils:android-share-utils:0.0.4'
+compile 'com.zyl.androidshareutils:android-share-utils:0.0.5'
 ```
