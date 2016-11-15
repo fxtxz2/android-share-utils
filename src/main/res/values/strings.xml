@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">android share utils</string>
+
+    <!-- 分享对话框 -->
+    <string name="share_dialog_qzone">QQ空间</string>
+    <string name="share_dialog_wechat">微信好友</string>
+    <string name="share_dialog_wechatmoments">微信朋友圈</string>
+    <string name="share_dialog_qq">QQ</string>
 </resources>

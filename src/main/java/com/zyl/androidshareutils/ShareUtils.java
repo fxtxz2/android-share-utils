@@ -1,9 +1,26 @@
 package com.zyl.androidshareutils;
 
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.text.TextUtils;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.liulishuo.filedownloader.BaseDownloadTask;
+import com.liulishuo.filedownloader.FileDownloadLargeFileListener;
+import com.liulishuo.filedownloader.FileDownloader;
+
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -238,6 +255,174 @@ public class ShareUtils {
         sendIntent.setType(MIME_TEXT);
         sendIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.getApplicationContext().startActivity(sendIntent);
+    }
+
+    public void shareNative(final Context context, String imageUrl, final String content, String downloadDir) {
+        if (!TextUtils.isEmpty(imageUrl)){
+            String fileName = FilenameUtils.getName(imageUrl);//检索文件名
+            final File file = new File(downloadDir + fileName);
+            if (!fileIsExists(file.getPath())){
+                FileDownloader.getImpl().create(imageUrl)
+                        .setPath(file.getPath())
+                        .setListener(new FileDownloadLargeFileListener() {
+                            @Override
+                            protected void pending(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                            }
+
+                            @Override
+                            protected void progress(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                            }
+
+                            @Override
+                            protected void paused(BaseDownloadTask task, long soFarBytes, long totalBytes) {
+
+                            }
+
+                            @Override
+                            protected void completed(BaseDownloadTask task) {
+                                // 重新实现系统分享
+                                ArrayList<Uri> uris = new ArrayList<>();
+                                if (file.exists()){
+                                    uris.add(Uri.fromFile(file));
+                                }
+                                shareDialog(context, content, uris);
+                            }
+
+                            @Override
+                            protected void error(BaseDownloadTask task, Throwable e) {
+
+                            }
+
+                            @Override
+                            protected void warn(BaseDownloadTask task) {
+
+                            }
+                        }).start();
+            } else {
+                // 重新实现系统分享
+                ArrayList<Uri> uris = new ArrayList<>();
+                if (file.exists()){
+                    uris.add(Uri.fromFile(file));
+                }
+                shareDialog(context, content, uris);
+            }
+        }
+    }
+
+    public Dialog shareDialog(final Context context, final String content, final ArrayList<Uri> uris){
+        Dialog dialog = new Dialog(context, R.style.Theme_Light_Dialog);
+        View dialogView = LayoutInflater.from(context).inflate(R.layout.share_dialog, null);
+        dialog.getWindow();
+        //获得dialog的window窗口
+        Window window = dialog.getWindow();
+        //设置dialog在屏幕底部
+        window.setGravity(Gravity.BOTTOM);
+        //设置dialog弹出时的动画效果，从屏幕底部向上弹出
+        window.setWindowAnimations(R.style.dialogStyle);
+        window.getDecorView().setPadding(0, 0, 0, 0);
+        //获得window窗口的属性
+        android.view.WindowManager.LayoutParams lp = window.getAttributes();
+        //设置窗口宽度为充满全屏
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        //设置窗口高度为包裹内容
+        lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        //将设置好的属性set回去
+        window.setAttributes(lp);
+        //将自定义布局加载到dialog上
+        dialog.setContentView(dialogView);
+        dialog.show();
+        TextView wechat = (TextView)dialogView.findViewById(R.id.wechat);
+        wechat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isPkgInstalled("com.tencent.mm", context)){
+                    ShareUtils.getInstance().shareToWeiXinFriend(content, context);
+                } else {
+                    Toast.makeText(context, "请安装微信客户端", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        TextView wechatmonments = (TextView)dialogView.findViewById(R.id.wechatmonments);
+        wechatmonments.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isPkgInstalled("com.tencent.mm", context)){
+                    if (uris.isEmpty()) {
+                        Toast.makeText(context, "请先下载图片", Toast.LENGTH_SHORT).show();
+                    } else {
+                        ShareUtils.getInstance().shareToWeiXinTimeLine(content, uris, context);
+                    }
+                } else {
+                    Toast.makeText(context, "请安装微信客户端", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        TextView qq = (TextView)dialogView.findViewById(R.id.qq);
+        qq.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (isPkgInstalled("com.tencent.mobileqq", context)){
+                    ShareUtils.getInstance().shareToQQText(content, context);
+                } else {
+                    Toast.makeText(context, "请安装QQ客户端", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        TextView qzone = (TextView)dialogView.findViewById(R.id.qzone);
+        qzone.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(isPkgInstalled("com.qzone", context)){
+                    if (uris.isEmpty()) {
+                        Toast.makeText(context, "请先下载图片", Toast.LENGTH_SHORT).show();
+                    } else {
+                        ShareUtils.getInstance().shareToQzoneImage(content, uris, context);
+                    }
+                } else {
+                    Toast.makeText(context, "请安装QQ空间客户端", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        return dialog;
+    }
+
+    /**
+     * 判断文件是否存在
+     * @param filePath 保持文件路径
+     * @return true表示文件存在；false表示文件不存在
+     */
+    public static boolean fileIsExists(String filePath){
+        try{
+            File f=new File(filePath);
+            if(!f.exists()){
+                return false;
+            }
+
+        }catch (Exception e) {
+            //: handle exception
+            return false;
+        }
+        return true;
+    }
+    /**
+     * 检测apk是否已安装
+     * @param pkgName 检查的主包名
+     * @param context 当前上下文
+     * @return true 表示已经安装；false表示未安装
+     */
+    public static boolean isPkgInstalled(String pkgName, Context context) {
+        synchronized (ShareUtils.class) {
+            // 分析 Package manager has died http://www.lai18.com/content/2402015.html
+            try {
+                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(pkgName, PackageManager.GET_ACTIVITIES);
+                return true;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 
 }

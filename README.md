@@ -4,6 +4,24 @@
 主要使用了Google的[ClassyShark](https://github.com/google/android-classyshark)工具
 
 # 指南
+## 快速分享
+### 初始化
+```Java
+public class Application{
+  @Override
+    public void onCreate() {
+        super.onCreate();
+        /**
+          * 仅仅是缓存Application的Context，不耗时
+          */
+        FileDownloader.init(getApplicationContext());
+    }
+}
+```
+### 快速调用
+```Java
+ShareUtils.getInstance().shareNative(context, imageUrl, content, DIR_PATH);
+```
 ## 分享文本给微信好友
 ```Java
 ShareUtils.getInstance().shareToWeiXinFriend(content, MainActivity.this);
@@ -73,5 +91,5 @@ ShareUtils.getInstance().shareToQQImage(uris, MainActivity.this);// 分享多图
 ```
 # Gradle引入
 ```Gradle
-compile 'com.zyl.androidshareutils:android-share-utils:0.0.2'
+compile 'com.zyl.androidshareutils:android-share-utils:0.0.4'
 ```
