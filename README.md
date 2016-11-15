@@ -22,6 +22,8 @@ public class Application{
 ```Java
 ShareUtils.getInstance().shareNative(context, imageUrl, content, DIR_PATH);
 ```
+### 快速分享效果
+![android-share-utils](images/share_demo.gif)
 ## 分享文本给微信好友
 ```Java
 ShareUtils.getInstance().shareToWeiXinFriend(content, MainActivity.this);
